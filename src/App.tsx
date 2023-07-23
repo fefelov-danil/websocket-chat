@@ -1,5 +1,6 @@
 import {ChangeEvent, useEffect, useState} from "react";
 import {io} from "socket.io-client";
+import {v1} from "uuid";
 
 type MessageType = {
   id: string
@@ -17,6 +18,12 @@ function App() {
     socket.on('init-messages-pushed', (messages: MessageType[]) => {
       setMessages(messages)
     })
+
+    socket.on('newMessage-pushed', (message: MessageType) => {
+      setMessages(prev => {
+        return [...prev, message]
+      })
+    })
   }, [])
 
   const textareaHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -24,7 +31,9 @@ function App() {
   }
 
   const sendMessageHandler = () => {
-    socket.emit('client-message-sent', message)
+    const newMessage = {id: v1(), name: 'Danil', message}
+
+    socket.emit('client-message-sent', newMessage)
     setMessage('')
   }
 
@@ -32,7 +41,7 @@ function App() {
     <div>
       {messages.map(message => (
         <div key={message.id}>
-          <span>{message.name}</span>
+          <span>{message.name}: </span>
           <span>{message.message}</span>
         </div>
       ))}
